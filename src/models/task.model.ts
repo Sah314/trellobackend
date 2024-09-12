@@ -1,13 +1,10 @@
-enum TaskStatus{
-    TODO = 'todo',
-    INPROGRESS = 'inprogress',
-    DONE = 'done'
-}
+import { TaskStatus } from "@prisma/client";
+
 export class Task {
   constructor(
-    public readonly id: number,
+    public readonly id: number | undefined,
     public readonly title: string,
     public readonly description: string,
-    public readonly status: TaskStatus
+    public readonly taskstatus: TaskStatus
   ) {}
 }
