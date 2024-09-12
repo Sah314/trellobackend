@@ -1,0 +1,24 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+    image: postgres
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: trello_db
+      POSTGRES_PASSWORD: trello_db_password
+      POSTGRES_DB: trello_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+ 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  
+volumes:
+  pgdata:
