@@ -60,7 +60,7 @@ router.post(
     try {
       console.log("Inside /google");
       const { token } = req.body;
-      console.log("Received token in /google", token);
+      //console.log("Received token in /google", token);
       const ticket = await client.verifyIdToken({
         idToken: token,
         audience: process.env.GOOGLE_CLIENT_ID,

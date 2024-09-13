@@ -161,7 +161,7 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 export const getUserFromRequest = async (req: Request) => {
   // Extract the token from the Authorization header
-  console.log("headers::",req.headers);
+  //console.log("headers::",req.headers);
   const authHeader = req.headers.authorization || "";
 
   const jwtToken = authHeader.split(" ")[1];
