@@ -1,18 +1,19 @@
-import { Task } from "../models/task.model";
-import { PrismaClient } from "@prisma/client";
+//import { Task } from "../models/task.model";
+import { PrismaClient,Task } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export class TaskRepository {
   async createTask(tsk: Task): Promise<Task> {
     //initialize the database client
-    const Task = await prisma.task.create({
+    const createdTask = await prisma.task.create({
       data: {
         ...tsk,
+        taskstatus:tsk.taskstatus
         // Add the 'status' property and cast it to TaskStatus
       },
     });
-    return Task as unknown as Task;
+    return createdTask as unknown as Task;
     //create task using the database client and orm
     //return the created task
   }
@@ -28,11 +29,16 @@ export class TaskRepository {
   }
 
   async getTasks(limit: number, offset: number): Promise<Task[]> {
-    const tasks = await prisma.task.findMany({
-      skip: offset,
-      take: limit,
-    });
-    return tasks as unknown as Task[];
+   try {
+     const tasks = await prisma.task.findMany({
+       skip: offset,
+       take: limit,
+     });
+     return tasks as unknown as Task[];
+   } catch (error) {
+      console.error(error);
+      throw new Error(`Task with limit ${limit} not found`);
+   }
   }
 
   async getTask(id: number): Promise<Task> {
