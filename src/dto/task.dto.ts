@@ -17,6 +17,4 @@ export class UpdateTaskRequest {
   description?: string;
 
   taskstatus?: TaskStatus;
-
-
 }
