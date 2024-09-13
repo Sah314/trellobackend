@@ -1,94 +1,188 @@
-import express ,{Request,Response,NextFunction} from 'express';
-import { TaskRepository } from '../repository/task.repository';
-import { TaskService } from '../service/task.service';
-import { CreateTaskRequest, UpdateTaskRequest } from '../dto/task.dto';
-import { requestValidator } from '../utils/validator';
-import { Task} from '../models/task.model';
-import { TaskStatus } from '@prisma/client';
+import express, { Request, Response, NextFunction } from "express";
+import { TaskRepository } from "../repository/task.repository";
+import { TaskService } from "../service/task.service";
+import { CreateTaskRequest, UpdateTaskRequest } from "../dto/task.dto";
+import { requestValidator } from "../utils/validator";
+import jwt from "jsonwebtoken"
+interface CustomRequest extends Request {
+  user?: any;
+}
+
 const router = express.Router();
 
-// endpoints
-
 const taskRepository = new TaskRepository();
-export const taskService = new TaskService(taskRepository);
+const taskService = new TaskService(taskRepository);
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-router.post("/task", async (req: Request, res: Response, next: NextFunction) => {
-try {
 
-    const {errors, input} = await requestValidator(CreateTaskRequest, req.body);
-    if(!input){
-        return res.status(400).json(errors);
-    }
-
-    const data = await taskService.createTask(input);
-    res.status(201).json(data);
-    }  catch (error) {
-        next(error);
-    }
+//Middleware to extract user from request (e.g., JWT authentication middleware)
+const authMiddleWare = (req: CustomRequest, res: Response, next: NextFunction) => {
+  // Example: You can add your own logic to extract and verify user
+  req.user = getUserFromRequest(req);
+  next();
 }
-);
 
-router.patch("/task/:id", async (req: Request, res: Response, next: NextFunction) => { 
-try {
-    const { errors, input } = await requestValidator(
-      UpdateTaskRequest,
-      req.body
-    );
-    if (!input) {
-      return res.status(400).json(errors);
+router.post(
+  "/task",authMiddleWare,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { errors, input } = await requestValidator(
+        CreateTaskRequest,
+        req.body
+      );
+      if (!input) {
+        return res.status(400).json({ errors, message: "Validation failed" });
+      }
+
+      if (!(req as CustomRequest).user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const data = await taskService.createTask({
+        ...input,
+        userId: (req as CustomRequest).user.id,
+      });
+      res.status(201).json(data);
+    } catch (error) {
+      next(error); // Let the global error handler manage the error
     }
-
-    const id = parseInt(req.params.id) || 0;
-    const data = await taskService.createTask({id,...input});
-    res.status(201).json(data);
-
-} catch (error) {
-        console.error(error);
-    }
-}
-);
-
-router.get("/task/:id", async (req: Request, res: Response, next: NextFunction) => {   
-try {
-    
-} catch (error) {
-        
-    }
-}
-);
-
-router.get("/task", async (req: Request, res: Response, next: NextFunction) => {
-  const limit = Number(req.query["limit"]) || 5;
-  const offset = Number(req.query["offset"]);
-
-  try {
-    const data = await taskService.getTasks(limit, offset);
-    return res.status(200).json(data);
-  } catch (error) {
-    const err = error as Error;
-    return res.status(500).json(err.message);
   }
+);
 
-});
+router.patch(
+  "/task/:id",
+  authMiddleWare,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { errors, input } = await requestValidator(
+        UpdateTaskRequest,
+        req.body
+      );
+      if (!input) {
+        return res.status(400).json({ errors, message: "Validation failed" });
+      }
+
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid task ID" });
+      }
+
+      if (!(req as CustomRequest).user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const data = await taskService.updateTask({
+        id,
+        ...input,
+        userId: (req as CustomRequest).user.id,
+      });
+      res.status(200).json(data);
+    } catch (error) {
+      next(error); // Let the global error handler manage the error
+    }
+  }
+);
+
+router.get(
+  "/task/:id",
+  authMiddleWare,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid task ID" });
+      }
+
+      const data = await taskService.getTask(id);
+      res.status(200).json(data);
+    } catch (error) {
+      next(error); // Let the global error handler manage the error
+    }
+  }
+);
+
+router.get(
+  "/task",
+  authMiddleWare,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const limit = Number(req.query["limit"]) || 5;
+    const offset = Number(req.query["offset"]) || 0;
+
+    try {
+      const data = await taskService.getTasks(limit, offset);
+      res.status(200).json(data);
+    } catch (error) {
+      next(error); // Let the global error handler manage the error
+    }
+  }
+);
 
 router.delete(
   "/task/:id",
+  authMiddleWare,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const taskId = parseInt(req.params.id, 10);
-      const deletedTask = await taskService.deleteTask(taskId);
-
-      if (!deletedTask) {
-        return res.status(404).json({ error: "Task not found" });
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid task ID" });
       }
 
-      res.status(204).send(); // No content for successful deletion
+      if (!(req as CustomRequest).user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const deletedTask = await taskService.deleteTask(
+        id,
+        (req as CustomRequest).user.id
+      );
+      if (!deletedTask) {
+        return res
+          .status(404)
+          .json({ message: `Task with ID ${id} not found` });
+      }
+
+      res
+        .status(200)
+        .json({ message: `Successfully deleted task with ID ${id}` });
     } catch (error) {
-      next(error);
+      next(error); // Let the global error handler manage the error
     }
   }
 );
 
+// Global Error Handler
+router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: "Internal Server Error",
+    error: err.message,
+  });
+});
+
+export const getUserFromRequest = async (req: Request) => {
+  // Extract the token from the Authorization header
+  console.log("headers::",req.headers);
+  const authHeader = req.headers.authorization || "";
+
+  const jwtToken = authHeader.split(" ")[1];
+
+  if (!jwtToken) {
+    throw new Error("No token provided");
+  }
+
+  try {
+    // Verify and decode the token
+    const decoded = jwt.verify(jwtToken, JWT_SECRET) as {
+      id: number;
+      email: string;
+    };
+    // Assuming the decoded token contains user info (id and email)
+    return { id: decoded.id, email: decoded.email };
+  } catch (error) {
+    // Handle the case where token verification fails
+    throw new Error("Invalid or expired token");
+  }
+};
 
 
 export default router;
