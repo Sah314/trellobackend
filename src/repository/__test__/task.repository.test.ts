@@ -32,16 +32,16 @@ describe("TaskRepository", () => {
 
   describe("createTask", () => {
     it("should create a task successfully", async () => {
-      const taskData: Task = {
+      const taskData = {
         id: 1,
         title: "Test Task",
         description: "Test Description",
         userId: 1,
         taskstatus: TaskStatus.INPROGRESS,
         createdAt: new Date(),
-      };
+      } as Task;
 
-      (prisma.task.create as jest.Mock).mockResolvedValue(taskData);
+jest.spyOn(prisma.task, "create").mockResolvedValue(taskData);
 
       const result = await taskRepository.createTask(taskData);
 
@@ -59,14 +59,15 @@ describe("TaskRepository", () => {
         id: 1,
         title: "Test Task",
         description: "Test Description",
-        taskstatus: "PENDING",
+        taskstatus: TaskStatus.INPROGRESS,
+        userId: 1,
         createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
-      (prisma.task.create as jest.Mock).mockRejectedValue(
-        new Error("Task creation failed")
-      );
+     jest
+       .spyOn(prisma.task, "create")
+       .mockRejectedValue(new Error("Task creation failed"));
+
 
       await expect(taskRepository.createTask(taskData)).rejects.toThrow(
         "Task creation failed"
