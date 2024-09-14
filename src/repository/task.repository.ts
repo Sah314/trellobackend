@@ -18,10 +18,19 @@ export class TaskRepository {
     //return the created task
   }
   async updateTask(data: Task): Promise<Task> {
+
+    const existingTask = await prisma.task.findUnique({
+      where: { id: data.id , userId:data.userId},
+    });
+    
+
     const updatedTask = await prisma.task.update({
       where: { id: data.id },
       data: {
-        ...data,
+        userId:data.userId,
+        taskstatus:data.taskstatus?data.taskstatus:existingTask?.taskstatus,
+        title:data.title?data.title:existingTask?.title,
+        description:data.description?data.description:existingTask?.description
         // Map the status property to the enum if needed
       },
     });
