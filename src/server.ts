@@ -7,7 +7,7 @@ const app = express()
 app.use(
   cors({
     origin: "*", // Allow requests from your frontend
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow these methods
+    methods: ["GET", "POST", "PATCH", "DELETE"], // Allow these methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
   })
 );

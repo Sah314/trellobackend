@@ -31,7 +31,7 @@ export class TaskService {
       const tasks = await this._taskRepository.getTasks(limit, offset);
       return tasks;
     } catch (error) {
-      throw new Error(`Task with ID ${limit} not found`);
+      throw error;
     }
   };
 
@@ -40,7 +40,7 @@ export class TaskService {
      const task = await this._taskRepository.getTask(id);
      return task;
    } catch (error) {
-    throw new Error(`Task with ID ${id} not found`);
+    throw error;
    }
 };
   updateTask = async (data: any): Promise<Task> => {
@@ -52,7 +52,7 @@ export class TaskService {
      const updatedTask = await this._taskRepository.updateTask(data);
      return updatedTask;
    } catch (error) {
-      throw new Error(`Task with ID ${data.id} not found`);
+      throw error;
    }
 };
   deleteTask = async (id: number, userId:number): Promise<Task> => {
@@ -64,7 +64,7 @@ export class TaskService {
      const deletedTask =await this._taskRepository.deleteTask(id);
      return deletedTask;
  } catch (error) {
-    throw new Error(`Task with ID ${id} not found`);
+    throw error;
  }
 };
 }
