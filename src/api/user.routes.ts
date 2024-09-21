@@ -3,32 +3,40 @@ import { SignupRequest, LoginRequest } from "../dto/user.dto";
 import { requestValidator } from "../utils/validator";
 import { UserRepository } from "../repository/user.repository";
 import { UserService } from "../service/user.service";
-import { OAuth2Client } from "google-auth-library";
-import jwt from "jsonwebtoken";
+import { getUserFromRequest } from "./task.routes";
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const router = express.Router();
 const userRepository = new UserRepository();
 const userService = new UserService(userRepository);
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 // login endpoint
 router.post(
   "/login",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { errors, input } = await requestValidator(LoginRequest, req.body);
+      console.log("Inside /login");
+     const authheader = req.headers.authorization;
+     console.log(req.headers.authorization);
+     if(authheader?.split(" ")[1]){
+       const result = await getUserFromRequest(req);
+       console.log("User ID: ", result);
+       if (result) {
+         return res.status(200).json({ message: "Already logged in", result});
+       }
+     }  
+    const { errors, input } = await requestValidator(LoginRequest, req.body);
       if (errors || !input) {
         return res.status(400).json({ errors, message: "Validation failed" });
       }
 
-      const user = await userService.loginUser(input);
-      if (!user) {
+    const result = await userService.loginUser(input);
+      if (!result) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      res.status(200).json({user});
+      res.status(200).json({ result });
+    
+      
     } catch (error) {
       next(error);
     }
@@ -44,7 +52,7 @@ router.post(
       if (errors || !input) {
         return res.status(400).json({ errors, message: "Validation failed" });
       }
-
+      //console.log(input.firstname, input.lastname);
       const newUser = await userService.createUser(input);
       res.status(201).json(newUser);
     } catch (error) {
@@ -60,21 +68,11 @@ router.post(
     try {
       console.log("Inside /google");
       const { token } = req.body;
-      //console.log("Received token in /google", token);
-      const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-      const payload = ticket.getPayload();
-
-      if (!payload) {
-        return res.status(400).json({ message: "Invalid Google token" });
-      }
-
-      const user = await userService.googleAuth(payload);
+     
+      const result = await userService.googleAuth(token);
+      console.log("73....",result);
       //const userToken = await userService.generateToken(user);
-      const jwttoken = jwt.sign({ user: user.id, email: user.email }, JWT_SECRET);
-      res.status(200).json({ user:user.id, email:user.email, token: jwttoken});
+      res.status(200).json({result});
     } catch (error) {
       next(error);
     }

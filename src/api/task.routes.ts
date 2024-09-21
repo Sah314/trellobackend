@@ -16,9 +16,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 
 //Middleware to extract user from request (e.g., JWT authentication middleware)
-const authMiddleWare = (req: CustomRequest, res: Response, next: NextFunction) => {
+const authMiddleWare = async(req: CustomRequest, res: Response, next: NextFunction) => {
   // Example: You can add your own logic to extract and verify user
-  req.user = getUserFromRequest(req);
+  req.user = await getUserFromRequest(req);
   next();
 }
 
@@ -37,10 +37,11 @@ router.post(
       if (!(req as CustomRequest).user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
+      const userId = (req as CustomRequest).user.id;
+     
       const data = await taskService.createTask({
         ...input,
-        userId: (req as CustomRequest).user.id,
+        userId: userId,
       });
       res.status(201).json(data);
     } catch (error) {
@@ -62,19 +63,19 @@ router.patch(
         return res.status(400).json({ errors, message: "Validation failed" });
       }
 
-      const id = parseInt(req.params.id, 10);
-      if (isNaN(id)) {
+      const id = req.params.id;
+      if (!id) {
         return res.status(400).json({ message: "Invalid task ID" });
       }
 
       if (!(req as CustomRequest).user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
+const userId = (req as CustomRequest).user.id;
       const data = await taskService.updateTask({
         id,
         ...input,
-        userId: (req as CustomRequest).user.id,
+        userId: userId,
       });
       res.status(200).json(data);
     } catch (error) {
@@ -88,12 +89,12 @@ router.get(
   authMiddleWare,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (isNaN(id)) {
+      const id = req.params.id;
+      if (!id) {
         return res.status(400).json({ message: "Invalid task ID" });
       }
-
-      const data = await taskService.getTask(id);
+      const userId = (req as CustomRequest).user.id;
+      const data = await taskService.getTask(id, userId);
       res.status(200).json(data);
     } catch (error) {
       next(error); // Let the global error handler manage the error
@@ -109,7 +110,13 @@ router.get(
     const offset = Number(req.query["offset"]) || 0;
 
     try {
-      const data = await taskService.getTasks(limit, offset);
+
+       if (!(req as CustomRequest).user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+            const userId = (req as CustomRequest).user.id;
+
+      const data = await taskService.getTasks(limit, offset, userId);
       res.status(200).json(data);
     } catch (error) {
       next(error); // Let the global error handler manage the error
@@ -122,8 +129,8 @@ router.delete(
   authMiddleWare,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (isNaN(id)) {
+      const id = req.params.id;
+      if (!id) {
         return res.status(400).json({ message: "Invalid task ID" });
       }
 
@@ -165,7 +172,6 @@ export const getUserFromRequest = async (req: Request) => {
   const authHeader = req.headers.authorization || "";
 
   const jwtToken = authHeader.split(" ")[1];
-
   if (!jwtToken) {
     throw new Error("No token provided");
   }
@@ -180,9 +186,10 @@ export const getUserFromRequest = async (req: Request) => {
     return { id: decoded.id, email: decoded.email };
   } catch (error) {
     // Handle the case where token verification fails
+    console.log("183.....",error);
     throw new Error("Invalid or expired token");
   }
 };
 
-
 export default router;
+

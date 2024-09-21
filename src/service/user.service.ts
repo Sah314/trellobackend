@@ -1,7 +1,9 @@
 import { User } from "../models/user.model";
 import { UserRepository } from "../repository/user.repository";
+import { getJwtToken } from "../utils/auth";
+import { OAuth2Client } from "google-auth-library";
 
-
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export class UserService {
 
     _userRepository:UserRepository;
@@ -9,24 +11,53 @@ export class UserService {
     constructor(private userRepository:UserRepository){
         this._userRepository = userRepository
     }
-  createUser = async (input: any): Promise<User> => {
+  createUser = async (input: any): Promise<{user:User,token:string}> => {
     try {
-        const createdUser = await this._userRepository.signup(input);
-        return createdUser;
+      //console.log(input.firstName, input.lastName);
+        const createdUser:User = await this._userRepository.signup(input);
+        const token = getJwtToken(createdUser.id,createdUser.email);
+        return {user:createdUser, token};
     } catch (error) {
       console.error("An error occurred while creating a user: ", error);
       throw error
     }
   };
 
-  loginUser = async (input:any): Promise<User> => {
+  loginUser = async (input:any): Promise<{user:User, token:string}> => {
+        try { 
+         
+          const existingUser = await this._userRepository.login(input);
+          const token = getJwtToken(existingUser.id, existingUser.email);
+          return { user: existingUser, token };
 
-    throw new Error("Not implemented");
+        } catch (error) {
+           console.error("An error occurred while logging in the user: ", error);
+           throw error;
+        }
   };
 
-  googleAuth = async(input:any):Promise<User> =>{
-    const user = await this._userRepository.googleAuth(input);
-    return user;
+  googleAuth = async(input:any):Promise<{user:User, token:string}> =>{
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: input,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new Error("Invalid Google token");
+      }
+      const googleUser = await this._userRepository.googleAuth(payload);
+      const token = getJwtToken(googleUser.id, googleUser.email);
+      return {user:googleUser, token};
+
+
+    } catch (error) {
+      console.error("An error occurred while authenticating the user: ", error);
+      throw error;
+    }
+
   }
+
 }
 

@@ -6,17 +6,28 @@ const prisma = new PrismaClient();
 export class TaskRepository {
   async createTask(tsk: Task): Promise<Task> {
     //initialize the database client
-    const createdTask = await prisma.task.create({
-      data: {
-        ...tsk,
-        taskstatus:tsk.taskstatus
-        // Add the 'status' property and cast it to TaskStatus
-      },
-    });
-    return createdTask as unknown as Task;
+    try {
+      console.log("Creating Task: ", tsk);
+      
+      const createdTask = await prisma.task.create({
+        data: {
+          userId: tsk.userId,
+          title: tsk.title,
+          description: tsk.description,
+          taskstatus:tsk.taskstatus
+          // Add the 'status' property and cast it to TaskStatus
+        },
+      });
+      console.log("Created Task: ", createdTask.id);  
+      return createdTask as unknown as Task;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Error creating task");
+    }
     //create task using the database client and orm
     //return the created task
   }
+
   async updateTask(data: Task): Promise<Task> {
 
     const existingTask = await prisma.task.findUnique({
@@ -37,11 +48,12 @@ export class TaskRepository {
     return updatedTask as unknown as Task;
   }
 
-  async getTasks(limit: number, offset: number): Promise<Task[]> {
+  async getTasks(limit: number, offset: number, userId:string): Promise<Task[]> {
    try {
      const tasks = await prisma.task.findMany({
        skip: offset,
        take: limit,
+        where: { userId: userId },
      });
      return tasks as unknown as Task[];
    } catch (error) {
@@ -50,9 +62,9 @@ export class TaskRepository {
    }
   }
 
-  async getTask(id: number): Promise<Task> {
+  async getTask(id: string, userId:string): Promise<Task> {
     const task = await prisma.task.findUnique({
-      where: { id },
+      where: { id: id, userId: userId },
     });
 
     if (!task) {
@@ -62,7 +74,7 @@ export class TaskRepository {
     return task as unknown as Task;
   }
 
-  async deleteTask(id: number): Promise<Task> {
+  async deleteTask(id: string): Promise<Task> {
     const deletedTask = await prisma.task.delete({
       where: { id },
     });

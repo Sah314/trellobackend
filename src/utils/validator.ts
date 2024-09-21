@@ -25,6 +25,5 @@ export const requestValidator = async <T>(
       .join(", ");
     return { errors: errorMessages, input };
   }
-
   return { errors: false, input };
 };

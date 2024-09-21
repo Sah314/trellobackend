@@ -14,20 +14,21 @@ datasource db {
 }
 
 model Task {
-  id          Int        @id @default(autoincrement())
+  id          String        @id @default(uuid())
   createdAt   DateTime   @default(now())
   title       String     @db.VarChar(255)
   taskstatus  TaskStatus
   description String?
   user        User       @relation(fields: [userId], references: [id]) // Relationship with User
-  userId      Int       @default(1)
+  userId      String     
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   email     String   @unique
-  name      String?
-  password  String?  // Optional for OAuth users
+  firstname String?
+  lastname  String?
+  password  String  // Optional for OAuth users
   googleId  String?  @unique // Google sign-in users will have googleId
   tasks     Task[]   // One-to-many relationship: User has many Tasks
 }

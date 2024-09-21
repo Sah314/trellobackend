@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, MinLength } from "class-validator";
+import { IsString, IsEmail,IsOptional ,MinLength } from "class-validator";
 
 export class SignupRequest {
   @IsEmail({}, { message: "Email must be a valid email address" })
@@ -8,9 +8,13 @@ export class SignupRequest {
   @MinLength(6, { message: "Password must be at least 6 characters long" })
   password!: string;
 
-  @IsString()
   @IsOptional()
-  username?: string;
+  @IsString()
+  firstname?: string;
+
+  @IsOptional()
+  @IsString()
+  lastname?: string;
 }
 
 export class LoginRequest {
