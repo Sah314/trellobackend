@@ -7,8 +7,13 @@ const app = express()
 app.use(
   cors({
     origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE","HEAD"], // Allow these methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Access-Control-Allow-Origin",
+      "Origin",
+    ], // Allow these headers
     credentials: true, // Allow credentials
   })
 );
@@ -17,7 +22,12 @@ app.options(
   cors({
     origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
     methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Access-Control-Allow-Origin",
+      "Origin",
+    ], // Allow these headers
     credentials: true, // Allow credentials
   })
 );
