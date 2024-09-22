@@ -4,40 +4,11 @@ import { TaskService } from "../service/task.service";
 import { CreateTaskRequest, UpdateTaskRequest } from "../dto/task.dto";
 import { requestValidator } from "../utils/validator";
 import jwt from "jsonwebtoken"
-import cors from "cors";
 interface CustomRequest extends Request {
   user?: any;
 }
 
 const router = express.Router();
-router.use(
-  cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
-);
-
-router.options(
-  "*",
-  cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
-);
 
 const taskRepository = new TaskRepository();
 const taskService = new TaskService(taskRepository);

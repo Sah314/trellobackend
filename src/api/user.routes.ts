@@ -4,38 +4,10 @@ import { requestValidator } from "../utils/validator";
 import { UserRepository } from "../repository/user.repository";
 import { UserService } from "../service/user.service";
 import { getUserFromRequest } from "./task.routes";
-import cors from "cors";
 
 const router = express.Router();
 
-router.use(
-  cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
-);
 
-router.options(
-  "*",
-  cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
-);
 const userRepository = new UserRepository();
 const userService = new UserService(userRepository);
 
