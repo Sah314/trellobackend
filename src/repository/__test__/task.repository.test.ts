@@ -33,10 +33,10 @@ describe("TaskRepository", () => {
   describe("createTask", () => {
     it("should create a task successfully", async () => {
       const taskData = {
-        id: 1,
+        id: "1",
         title: "Test Task",
         description: "Test Description",
-        userId: 1,
+        userId: "1",
         taskstatus: TaskStatus.INPROGRESS,
         createdAt: new Date(),
       } as Task;
@@ -56,11 +56,11 @@ jest.spyOn(prisma.task, "create").mockResolvedValue(taskData);
 
     it("should throw an error if task creation fails", async () => {
       const taskData: Task = {
-        id: 1,
+        id: "1",
         title: "Test Task",
         description: "Test Description",
         taskstatus: TaskStatus.INPROGRESS,
-        userId: 1,
+        userId: "1",
         createdAt: new Date(),
       };
 
