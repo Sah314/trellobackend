@@ -12,7 +12,7 @@ app.use(
     credentials: true, // Allow credentials
   })
 );
-
+app.options("*", cors());
 app.use(express.json());
 
 app.use("/", taskRoutes);
