@@ -12,7 +12,15 @@ app.use(
     credentials: true, // Allow credentials
   })
 );
-app.options("*", cors());
+app.options(
+  "*",
+  cors({
+    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
+    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+    credentials: true, // Allow credentials
+  })
+);
 app.use(express.json());
 
 app.use("/", taskRoutes);
