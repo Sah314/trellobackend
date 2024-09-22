@@ -7,8 +7,9 @@ const app = express()
 app.use(
   cors({
     origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE"], // Allow these methods
+    methods: ["GET", "POST", "PATCH", "DELETE","HEAD"], // Allow these methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+    credentials: true, // Allow credentials
   })
 );
 
