@@ -5,32 +5,9 @@ import cors from "cors";
 const port = process.env.SERVER_PORT || 8080;
 const app = express()
 app.use(
-  cors({
-    origin: "*", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
+  cors()
 );
-app.options(
-  "*",
-  cors({
-    origin: "*", // Allow requests from your frontend
-    methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-      "Origin",
-    ], // Allow these headers
-    credentials: true, // Allow credentials
-  })
-);
+
 app.use(express.json());
 
 app.use("/", taskRoutes);
