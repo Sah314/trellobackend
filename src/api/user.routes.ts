@@ -19,7 +19,7 @@ router.post(
       console.log("Inside /login");
      const authheader = req.headers.authorization;
      console.log(req.headers.authorization);
-     if(authheader?.split(" ")[1] !== "null") {
+     if(authheader?.split(" ")[1] !== null) {
        const result = await getUserFromRequest(req);
        console.log("User ID: ", result);
        if (result) {
