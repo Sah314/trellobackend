@@ -6,7 +6,7 @@ const port = process.env.SERVER_PORT || 8080;
 const app = express()
 app.use(
   cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
+    origin: "*", // Allow requests from your frontend
     methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
     allowedHeaders: [
       "Content-Type",
@@ -20,7 +20,7 @@ app.use(
 app.options(
   "*",
   cors({
-    origin: "https://trelloclonefrontend.vercel.app", // Allow requests from your frontend
+    origin: "*", // Allow requests from your frontend
     methods: ["GET", "POST", "PATCH", "DELETE", "HEAD"], // Allow these methods
     allowedHeaders: [
       "Content-Type",
